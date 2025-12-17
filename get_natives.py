@@ -3,18 +3,11 @@ import zipfile
 import io
 import shutil
 
-OS = [
-    "linux",
-    "osx",
-    "windows"
-]
+OS = ["linux", "osx", "windows"]
 
-ARCH = [
-   "x86_64",
-   "aarch_64"
-]
+ARCH = ["x86_64", "aarch_64"]
 
-VER = "70"
+VER = "74"
 
 for os in OS:
     for arch in ARCH:
@@ -40,4 +33,3 @@ for os in OS:
                 with open("native/" + fn, "wb") as wf:
                     print(fn)
                     shutil.copyfileobj(nf, wf)
-

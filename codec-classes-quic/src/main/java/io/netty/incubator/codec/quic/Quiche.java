@@ -82,7 +82,7 @@ final class Quiche {
         if (!PlatformDependent.isAndroid()) {
             libName += '_' + PlatformDependent.normalizedOs()
                     + '_' + PlatformDependent.normalizedArch()
-                    + "_70";
+                    + "_74";
         }
 
         String libraryPath = System.getProperty("link.e4mc.native_path");
@@ -116,6 +116,7 @@ final class Quiche {
                 FileInputStream fis = new FileInputStream(libraryPath);
                 byte[] buf = new byte[fis.available()];
                 fis.read(buf);
+                fis.close();
 
                 MessageDigest digest = MessageDigest.getInstance("SHA-256");
                 byte[] hashed = digest.digest(buf);
@@ -152,20 +153,20 @@ final class Quiche {
 
     private static byte[] get_native_hash(String filename) {
         switch (filename) {
-            case "libnetty_quiche_linux_aarch_64_70.so":
-                return new byte[]{-43, -61, -111, -4, 38, -13, 13, -69, -75, 23, -63, -6, 17, -106, -14, -28, -53, 5, -80, -73, 73, 30, -41, 51, -73, 39, -122, 95, -45, 111, -67, -31};
-            case "libnetty_quiche_linux_x86_64_70.so":
-                return new byte[]{-16, 123, 107, -55, -54, 9, -116, 121, 7, -53, -50, -110, -4, 60, 121, 103, 125, -66, -49, -43, -99, -122, -67, -22, -121, 47, -74, -8, 71, 99, 26, 39};
-            case "libnetty_quiche_osx_aarch_64_70.dylib":
-                return new byte[]{-17, -86, 121, -69, 59, 11, 82, -81, -83, -13, 104, 104, -55, 98, -93, -29, 3, -78, 81, -7, -46, 74, 89, 24, -105, -75, -67, -64, -39, -71, 49, -105};
-            case "libnetty_quiche_osx_aarch_64_70.jnilib":
-                return new byte[]{-17, -86, 121, -69, 59, 11, 82, -81, -83, -13, 104, 104, -55, 98, -93, -29, 3, -78, 81, -7, -46, 74, 89, 24, -105, -75, -67, -64, -39, -71, 49, -105};
-            case "libnetty_quiche_osx_x86_64_70.dylib":
-                return new byte[]{117, 11, 32, 94, 2, -100, 25, -80, -120, 30, -5, 14, -75, -59, -40, 18, 7, -103, 3, 18, -107, -56, -28, -66, 83, 120, 95, 31, 84, -54, 63, 124};
-            case "libnetty_quiche_osx_x86_64_70.jnilib":
-                return new byte[]{117, 11, 32, 94, 2, -100, 25, -80, -120, 30, -5, 14, -75, -59, -40, 18, 7, -103, 3, 18, -107, -56, -28, -66, 83, 120, 95, 31, 84, -54, 63, 124};
-            case "netty_quiche_windows_x86_64_70.dll":
-                return new byte[]{-32, 105, 110, 52, -24, 93, -116, 94, 40, -113, -21, -26, 74, 35, -51, 22, 50, 125, 88, 95, 53, -25, 127, -28, 20, -39, 23, -103, 121, 42, -84, 73};
+            case "libnetty_quiche_linux_aarch_64_74.so":
+                return new byte[]{7, -91, -37, -42, 25, 121, 120, 91, 100, 102, -1, -89, 124, 68, -80, -30, 69, 35, -56, -124, -4, 10, 114, -22, 97, -22, 89, 20, 88, -82, 62, -64};
+            case "libnetty_quiche_linux_x86_64_74.so":
+                return new byte[]{-106, 19, -102, -81, 86, -41, 25, 59, -28, -109, -5, -19, -20, 85, 1, 58, 33, 91, 122, 95, -43, 81, -49, 42, 98, 79, -14, 68, 4, 6, -9, 2};
+            case "libnetty_quiche_osx_aarch_64_74.dylib":
+                return new byte[]{-11, 44, -112, 121, 43, 6, 104, 58, 61, 11, 72, 29, -25, 56, -13, 78, 57, 118, 95, 120, -121, 37, 13, 122, 78, 39, 59, -92, 75, -84, -77, 124};
+            case "libnetty_quiche_osx_aarch_64_74.jnilib":
+                return new byte[]{-11, 44, -112, 121, 43, 6, 104, 58, 61, 11, 72, 29, -25, 56, -13, 78, 57, 118, 95, 120, -121, 37, 13, 122, 78, 39, 59, -92, 75, -84, -77, 124};
+            case "libnetty_quiche_osx_x86_64_74.dylib":
+                return new byte[]{114, 28, -38, 84, 78, 118, 104, 111, 15, -8, 42, 24, 75, -124, 5, 61, 21, 60, -43, 16, 79, 81, 33, 104, -108, 53, 69, -47, -46, 67, -91, 63};
+            case "libnetty_quiche_osx_x86_64_74.jnilib":
+                return new byte[]{114, 28, -38, 84, 78, 118, 104, 111, 15, -8, 42, 24, 75, -124, 5, 61, 21, 60, -43, 16, 79, 81, 33, 104, -108, 53, 69, -47, -46, 67, -91, 63};
+            case "netty_quiche_windows_x86_64_74.dll":
+                return new byte[]{-52, -92, 92, -113, 76, 8, 82, 90, 78, -33, 3, 43, 28, 119, -38, -39, -6, 3, -85, -103, 39, 111, -99, -16, 42, 122, 19, 18, 107, 96, 8, 4};
         }
         return new byte[]{};
     }
