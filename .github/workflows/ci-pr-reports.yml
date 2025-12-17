@@ -26,6 +26,12 @@ env:
 permissions:
   contents: read
 
+# Cancel running jobs when a new push happens to the same branch as otherwise it will
+# tie up too many resources without providing much value.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   tests:
     permissions:
@@ -41,6 +47,9 @@ jobs:
           - setup: linux-x86_64-java8
           - setup: linux-x86_64-java17
           - setup: pr-windows-x86_64
+          - setup: macos-x86_64-java8
+          - setup: macos-aarch64-java8
+
     continue-on-error: ${{ matrix.ignore-if-missing }}
     steps:
       - name: Download Artifacts

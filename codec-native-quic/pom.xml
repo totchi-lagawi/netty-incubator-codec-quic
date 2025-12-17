@@ -19,11 +19,11 @@
   <parent>
     <groupId>io.netty.incubator</groupId>
     <artifactId>netty-incubator-codec-parent-quic</artifactId>
-    <version>0.0.70.Final</version>
+    <version>0.0.74.Final</version>
   </parent>
 
   <artifactId>netty-incubator-codec-native-quic</artifactId>
-  <version>0.0.70.Final</version>
+  <version>0.0.74.Final</version>
   <name>Netty/Incubator/Codec/Native/Quic</name>
   <packaging>${packaging.type}</packaging>
 
@@ -46,8 +46,8 @@
     <boringsslHomeIncludeDir>${boringsslHomeDir}/include</boringsslHomeIncludeDir>
     <boringsslRepository>https://boringssl.googlesource.com/boringssl</boringsslRepository>
     <!-- Lets use what we use in netty-tcnative-boringssl-static -->
-    <boringsslBranch>master</boringsslBranch>
-    <boringsslCommitSha>b8c97f5b4bc5d4758612a0430e5c2792d0f9ca7f</boringsslCommitSha>
+    <boringsslBranch>main</boringsslBranch>
+    <boringsslCommitSha>cccf8525db8a57153d3cb3e22efed2db4b71a8ab</boringsslCommitSha>
 
     <quicheSourceDir>${project.build.directory}/quiche-source</quicheSourceDir>
     <quicheBuildDir>${quicheSourceDir}/target/release</quicheBuildDir>
@@ -56,7 +56,7 @@
     <quicheHomeIncludeDir>${quicheHomeDir}/quiche/include</quicheHomeIncludeDir>
     <quicheRepository>https://github.com/cloudflare/quiche</quicheRepository>
     <quicheBranch>master</quicheBranch>
-    <quicheCommitSha>4ff56ec2566622980bbb0e0d7b9217254d97c4ba</quicheCommitSha>
+    <quicheCommitSha>5ea8d8e3569c1ed34b895e2211e62791e77c29ab</quicheCommitSha>
     <generatedSourcesDir>${project.build.directory}/generated-sources</generatedSourcesDir>
     <templateDir>${project.build.directory}/template</templateDir>
     <cargoTarget />
@@ -68,10 +68,6 @@
     <extraLdflags />
     <extraConfigureArg />
     <extraConfigureArg2 />
-    <!-- We need 10.12 as minimum to compile quiche and use it.
-         Anything below will fail when trying to load quiche with:
-         Symbol not found: ___isPlatformVersionAtLeast
-    -->
     <macosxDeploymentTarget />
     <bundleNativeCode />
     <crossCompile />
@@ -107,11 +103,8 @@
         </os>
       </activation>
       <properties>
-        <!--  We need 10.12 as minimum to compile quiche and use it.
-              Anything below will fail when trying to load quiche with:
-              Symbol not found: ___isPlatformVersionAtLeast
-        -->
-        <macosxDeploymentTarget>10.12</macosxDeploymentTarget>
+        <!--  We need 10.13 as minimum to compile quiche and boringssl  -->
+        <macosxDeploymentTarget>10.13</macosxDeploymentTarget>
         <!-- On *nix, add ASM flags to disable executable stack -->
         <cmakeAsmFlags>-Wa,--noexecstack -mmacosx-version-min=${macosxDeploymentTarget}</cmakeAsmFlags>
         <extraCflags>-mmacosx-version-min=${macosxDeploymentTarget}</extraCflags>
@@ -162,11 +155,11 @@
         <jniLibName>netty_quiche_osx_x86_64</jniLibName>
         <jni.classifier>osx-x86_64</jni.classifier>
         <javaModuleNameClassifier>osx.x86_64</javaModuleNameClassifier>
-        <macosxDeploymentTarget>10.12</macosxDeploymentTarget>
-        <extraCflags>-target x86_64-apple-macos10.12 -mmacosx-version-min=${macosxDeploymentTarget}</extraCflags>
-        <extraCxxflags>-target x86_64-apple-macos10.12</extraCxxflags>
+        <macosxDeploymentTarget>10.13</macosxDeploymentTarget>
+        <extraCflags>-target x86_64-apple-macos10.13 -mmacosx-version-min=${macosxDeploymentTarget}</extraCflags>
+        <extraCxxflags>-target x86_64-apple-macos10.13</extraCxxflags>
         <!-- On *nix, add ASM flags to disable executable stack -->
-        <cmakeAsmFlags>-Wa,--noexecstack -target x86_64-apple-macos10.12 -mmacosx-version-min=${macosxDeploymentTarget}</cmakeAsmFlags>
+        <cmakeAsmFlags>-Wa,--noexecstack -target x86_64-apple-macos10.13 -mmacosx-version-min=${macosxDeploymentTarget}</cmakeAsmFlags>
         <extraCmakeFlags>-DCMAKE_SYSTEM_PROCESSOR=x86_64 -DCMAKE_OSX_ARCHITECTURES=x86_64</extraCmakeFlags>
         <cmakeCFlags>${extraCflags} -O3 -fno-omit-frame-pointer</cmakeCFlags>
         <!-- We need to define __STDC_CONSTANT_MACROS and __STDC_FORMAT_MACROS when building boringssl on centos 6 -->
@@ -292,7 +285,7 @@
         <ldflags>-L${quicheHomeBuildDir} -lquiche -L${boringsslHomeBuildDir} -lssl -lcrypto</ldflags>
         <bundleNativeCode>META-INF/native/${jniLibName}.dll;osname=android;processor=${androidAbi}</bundleNativeCode>
         <ndkToolchain>${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64</ndkToolchain>
-        <extraLdflags>-Wl,-soname=${jniLibName}.so -Wl,--build-id=sha1 -Wl,--strip-debug -Wl,--exclude-libs,ALL -lm</extraLdflags>
+        <extraLdflags>-Wl,-soname=${jniLibName}.so -Wl,--build-id=sha1 -Wl,--strip-debug -Wl,--exclude-libs,ALL -lm -lc++_shared</extraLdflags>
 
         <extraConfigureArg>--host=${androidTriple}</extraConfigureArg>
 
@@ -666,6 +659,7 @@
                           <arg value="clone" />
                           <arg value="--branch" />
                           <arg value="${boringsslBranch}" />
+                          <arg value="--single-branch" />
                           <arg value="${boringsslRepository}" />
                           <arg value="${boringsslSourceDir}" />
                         </exec>
@@ -733,11 +727,14 @@
 
                     <!-- Only copy the libs and header files we need -->
                     <mkdir dir="${boringsslHomeBuildDir}" />
-                    <copy file="${boringsslBuildDir}/ssl/${libssl}" todir="${boringsslHomeBuildDir}" verbose="true" />
-                    <copy file="${boringsslBuildDir}/crypto/${libcrypto}" todir="${boringsslHomeBuildDir}" verbose="true" />
+                    <copy file="${boringsslBuildDir}/${libssl}" todir="${boringsslHomeBuildDir}" verbose="true" />
+                    <copy file="${boringsslBuildDir}/${libcrypto}" todir="${boringsslHomeBuildDir}" verbose="true" />
                     <copy todir="${boringsslHomeIncludeDir}" verbose="true">
                       <fileset dir="${boringsslSourceDir}/include" />
                     </copy>
+
+                    <!-- Delete boringssl source directory after build to free up space -->
+                    <delete dir="${boringsslSourceDir}" />
                   </else>
                 </if>
               </target>
@@ -772,9 +769,9 @@
 
                         <exec executable="git" failonerror="true" dir="${project.build.directory}" resolveexecutable="true">
                           <arg value="clone" />
-                          <arg value="--recursive" />
                           <arg value="--branch" />
                           <arg value="${quicheBranch}" />
+                          <arg value="--single-branch" />
                           <arg value="${quicheRepository}" />
                           <arg value="${quicheSourceDir}" />
                         </exec>
@@ -791,7 +788,7 @@
                       <equals arg1="${platform}" arg2="android" />
                       <then>
                         <exec executable="cargo" failonerror="true" dir="${quicheSourceDir}" resolveexecutable="true">
-                          <arg line="ndk ${cargoTarget} -p ${androidNdkVersion} -- build --exclude quiche_apps --workspace --features &quot;ffi qlog&quot; --release" />
+                          <arg line="ndk ${cargoTarget} -p ${androidNdkVersion} -- build -p quiche --features &quot;ffi qlog&quot; --release" />
                           <env key="CFLAGS" value="${extraCflags}" />
                           <env key="CXXFLAGS" value="${extraCxxflags}" />
                           <env key="QUICHE_BSSL_PATH" value="${boringsslHomeDir}/" />
@@ -802,7 +799,7 @@
                           <equals arg1="${os.detected.name}" arg2="windows" />
                           <then>
                             <exec executable="cargo" failonerror="true" dir="${quicheSourceDir}" resolveexecutable="true">
-                              <arg line="build --exclude quiche_apps --workspace --features &quot;ffi qlog&quot; --release" />
+                              <arg line="build -p quiche --features &quot;ffi qlog&quot; --release" />
                               <arg value="${cargoTarget}" />
                               <!-- See https://github.com/cloudflare/quiche/blob/0.7.0/src/build.rs#L73 -->
                               <env key="DEBUG" value="true" />
@@ -814,7 +811,7 @@
                             <equals arg1="${crossCompile}" arg2="linux" />
                             <then>
                               <exec executable="cargo" failonerror="true" dir="${quicheSourceDir}" resolveexecutable="true">
-                                <arg line="build --exclude quiche_apps --workspace --features &quot;ffi qlog&quot; --release" />
+                                <arg line="build -p quiche --features &quot;ffi qlog&quot; --release" />
                                 <arg value="${cargoTarget}" />
                                 <env key="QUICHE_BSSL_PATH" value="${boringsslHomeDir}/" />
                                 <!-- Lets enable frame-pointers so we can profile better -->
@@ -827,7 +824,7 @@
                             <equals arg1="${crossCompile}" arg2="mac" />
                             <then>
                               <exec executable="cargo" failonerror="true" dir="${quicheSourceDir}" resolveexecutable="true">
-                                <arg line="build --exclude quiche_apps --workspace --features &quot;ffi qlog&quot; --release" />
+                                <arg line="build -p quiche --features &quot;ffi qlog&quot; --release" />
                                 <env key="CFLAGS" value="${extraCflags}" />
                                 <env key="CXXFLAGS" value="${extraCxxflags}" />
                                 <arg value="${cargoTarget}" />
@@ -840,7 +837,7 @@
                           </elseif>
                           <else>
                             <exec executable="cargo" failonerror="true" dir="${quicheSourceDir}" resolveexecutable="true">
-                              <arg line="build --exclude quiche_apps --workspace --features &quot;ffi qlog&quot; --release" />
+                              <arg line="build -p quiche --features &quot;ffi qlog&quot; --release" />
                               <env key="CFLAGS" value="${extraCflags}" />
                               <env key="CXXFLAGS" value="${extraCxxflags}" />
                               <env key="QUICHE_BSSL_PATH" value="${boringsslHomeDir}/" />
@@ -858,6 +855,9 @@
                     <copy todir="${quicheHomeIncludeDir}">
                       <fileset dir="${quicheSourceDir}/quiche/include" />
                     </copy>
+
+                    <!-- Delete quiche source directory after build to free up space -->
+                    <delete dir="${quicheSourceDir}" />
                   </else>
                 </if>
               </target>
@@ -1066,7 +1066,7 @@
               <customPackageDirectory>${templateDir}</customPackageDirectory>
               <windowsBuildTool>msbuild</windowsBuildTool>
               <windowsCustomProps>true</windowsCustomProps>
-              <windowsPlatformToolset>v142</windowsPlatformToolset>
+              <windowsPlatformToolset>v143</windowsPlatformToolset>
               <libDirectory>${nativeLibOnlyDir}</libDirectory>
               <verbose>true</verbose>
               <configureArgs>

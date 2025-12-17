@@ -28,6 +28,12 @@ on:
 env:
   MAVEN_OPTS: -Dhttp.keepAlive=false -Dmaven.wagon.http.pool=false -Dmaven.wagon.http.retryhandler.count=5 -Dmaven.wagon.httpconnectionManager.ttlSeconds=240
 
+# Cancel running jobs when a new push happens to the same branch as otherwise it will
+# tie up too many resources without providing much value.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-linux-x86_64:
     runs-on: ubuntu-latest
@@ -105,7 +111,7 @@ jobs:
             **/hs_err*.log
 
   build-windows:
-    runs-on: windows-2019
+    runs-on: windows-2022
     name: windows-x86_64
     env:
       # Let's limit the amount of ram that is used to unpack rustup as we saw

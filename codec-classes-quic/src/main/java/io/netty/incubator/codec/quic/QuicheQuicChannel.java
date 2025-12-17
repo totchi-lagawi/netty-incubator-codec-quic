@@ -1055,7 +1055,7 @@ final class QuicheQuicChannel extends AbstractChannel implements QuicChannel {
         freeIfClosed();
     }
 
-    int streamCapacity(long streamId) {
+    long streamCapacity(long streamId) {
         QuicheQuicConnection conn = connection;
         if (conn.isClosed()) {
             return 0;
@@ -1086,11 +1086,8 @@ final class QuicheQuicChannel extends AbstractChannel implements QuicChannel {
                             long streamId = writableStreams[i];
                             QuicheQuicStreamChannel streamChannel = streams.get(streamId);
                             if (streamChannel != null) {
-                                int capacity = Quiche.quiche_conn_stream_capacity(connAddr, streamId);
-                                if (capacity < 0) {
-                                    // Let's close the channel if quiche_conn_stream_capacity(...) returns an error.
-                                    streamChannel.forceClose(capacity);
-                                } else if (streamChannel.writable(capacity)) {
+                                long capacity = Quiche.quiche_conn_stream_capacity(connAddr, streamId);
+                                if (streamChannel.writable(capacity)) {
                                     mayNeedWrite = true;
                                 }
                             }
@@ -1478,6 +1475,9 @@ final class QuicheQuicChannel extends AbstractChannel implements QuicChannel {
 
         void connectStream(QuicStreamType type, @Nullable ChannelHandler handler,
                            Promise<QuicStreamChannel> promise) {
+            if (!promise.setUncancellable()) {
+                return;
+            }
             long streamId = idGenerator.nextStreamId(type == QuicStreamType.BIDIRECTIONAL);
 
             try {
@@ -1511,6 +1511,9 @@ final class QuicheQuicChannel extends AbstractChannel implements QuicChannel {
         @Override
         public void connect(SocketAddress remote, SocketAddress local, ChannelPromise channelPromise) {
             assert eventLoop().inEventLoop();
+            if (!channelPromise.setUncancellable()) {
+                return;
+            }
             if (server) {
                 channelPromise.setFailure(new UnsupportedOperationException());
                 return;

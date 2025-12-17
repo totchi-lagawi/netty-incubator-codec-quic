@@ -75,7 +75,7 @@ final class QuicheQuicStreamChannel extends DefaultAttributeMap implements QuicS
     private volatile boolean inputShutdown;
     private volatile boolean outputShutdown;
     private volatile QuicStreamPriority priority;
-    private volatile int capacity;
+    private volatile long capacity;
 
     QuicheQuicStreamChannel(QuicheQuicChannel parent, long streamId) {
         this.parent = parent;
@@ -137,6 +137,9 @@ final class QuicheQuicStreamChannel extends DefaultAttributeMap implements QuicS
 
     private void updatePriority0(QuicStreamPriority priority, ChannelPromise promise) {
         assert eventLoop().inEventLoop();
+        if (!promise.setUncancellable()) {
+            return;
+        }
         try {
             parent().streamPriority(streamId(), (byte) priority.urgency(), priority.isIncremental());
         } catch (Throwable cause) {
@@ -164,6 +167,9 @@ final class QuicheQuicStreamChannel extends DefaultAttributeMap implements QuicS
 
     private void shutdownOutput0(ChannelPromise promise) {
         assert eventLoop().inEventLoop();
+        if (!promise.setUncancellable()) {
+            return;
+        }
         outputShutdown = true;
         unsafe.writeWithoutCheckChannelState(QuicStreamFrame.EMPTY_FIN, promise);
         unsafe.flush();
@@ -196,6 +202,9 @@ final class QuicheQuicStreamChannel extends DefaultAttributeMap implements QuicS
 
     private void shutdownInput0(int err, ChannelPromise channelPromise) {
         assert eventLoop().inEventLoop();
+        if (!channelPromise.setUncancellable()) {
+            return;
+        }
         inputShutdown = true;
         parent().streamShutdown(streamId(), true, false, err, channelPromise);
         closeIfDone();
@@ -208,6 +217,9 @@ final class QuicheQuicStreamChannel extends DefaultAttributeMap implements QuicS
 
     private void shutdownOutput0(int error, ChannelPromise channelPromise) {
         assert eventLoop().inEventLoop();
+        if (!channelPromise.setUncancellable()) {
+            return;
+        }
         parent().streamShutdown(streamId(), false, true, error, channelPromise);
         outputShutdown = true;
         closeIfDone();
@@ -230,6 +242,9 @@ final class QuicheQuicStreamChannel extends DefaultAttributeMap implements QuicS
 
     private void shutdown0(ChannelPromise promise) {
         assert eventLoop().inEventLoop();
+        if (!promise.setUncancellable()) {
+            return;
+        }
         inputShutdown = true;
         outputShutdown = true;
         unsafe.writeWithoutCheckChannelState(QuicStreamFrame.EMPTY_FIN, unsafe.voidPromise());
@@ -250,6 +265,9 @@ final class QuicheQuicStreamChannel extends DefaultAttributeMap implements QuicS
 
     private void shutdown0(int error, ChannelPromise channelPromise) {
         assert eventLoop().inEventLoop();
+        if (!channelPromise.setUncancellable()) {
+            return;
+        }
         inputShutdown = true;
         outputShutdown = true;
         parent().streamShutdown(streamId(), true, true, error, channelPromise);
@@ -392,10 +410,31 @@ final class QuicheQuicStreamChannel extends DefaultAttributeMap implements QuicS
     }
 
     /**
-     * Stream is writable.
+     * Stream writability changed.
      */
-    boolean writable(int capacity) {
+    boolean writable(long capacity) {
         assert eventLoop().inEventLoop();
+        if (capacity < 0) {
+            // If the value is negative its a quiche error.
+            if (capacity != Quiche.QUICHE_ERR_DONE) {
+                if (!queue.isEmpty()) {
+                    if (capacity == Quiche.QUICHE_ERR_STREAM_STOPPED) {
+                        queue.removeAndFailAll(new ChannelOutputShutdownException("STOP_SENDING frame received"));
+                        // If STOP_SENDING is received we should not close the channel but just fail all queued writes.
+                        return false;
+                    } else {
+                        queue.removeAndFailAll(Quiche.convertToException((int) capacity));
+                    }
+                } else if (capacity == Quiche.QUICHE_ERR_STREAM_STOPPED) {
+                    // If STOP_SENDING is received we should not close the channel
+                    return false;
+                }
+                // IF this error was not QUICHE_ERR_STREAM_STOPPED we should close the channel.
+                finSent = true;
+                unsafe().close(unsafe().voidPromise());
+            }
+            return false;
+        }
         this.capacity = capacity;
         boolean mayNeedWrite = unsafe().writeQueued();
         // we need to re-read this.capacity as writeQueued() may update the capacity.
@@ -410,19 +449,6 @@ final class QuicheQuicStreamChannel extends DefaultAttributeMap implements QuicS
         }
     }
 
-    void forceClose(int error) {
-        if (!queue.isEmpty()) {
-            if (error != Quiche.QUICHE_ERR_DONE) {
-                if (error == Quiche.QUICHE_ERR_STREAM_STOPPED) {
-                    queue.removeAndFailAll(new ChannelOutputShutdownException("STOP_SENDING frame received"));
-                } else {
-                    queue.removeAndFailAll(Quiche.convertToException(error));
-                }
-            }
-        }
-        forceClose();
-    }
-
     /**
      * Stream is readable.
      */
@@ -433,13 +459,6 @@ final class QuicheQuicStreamChannel extends DefaultAttributeMap implements QuicS
         if (readPending) {
             unsafe().recv();
         }
-    }
-
-    void forceClose() {
-        assert eventLoop().inEventLoop();
-        // Set received to true to ensure we will remove it from the internal map once we send the fin.
-        finSent = true;
-        unsafe().close(unsafe().voidPromise());
     }
 
     final class QuicStreamChannelUnsafe implements Unsafe {
@@ -477,6 +496,9 @@ final class QuicheQuicStreamChannel extends DefaultAttributeMap implements QuicS
         @Override
         public void register(EventLoop eventLoop, ChannelPromise promise) {
             assert eventLoop.inEventLoop();
+            if (!promise.setUncancellable()) {
+                return;
+            }
             if (registered) {
                 promise.setFailure(new IllegalStateException());
                 return;
@@ -494,6 +516,9 @@ final class QuicheQuicStreamChannel extends DefaultAttributeMap implements QuicS
         @Override
         public void bind(SocketAddress localAddress, ChannelPromise promise) {
             assert eventLoop().inEventLoop();
+            if (!promise.setUncancellable()) {
+                return;
+            }
             promise.setFailure(new UnsupportedOperationException());
         }
 
@@ -510,6 +535,9 @@ final class QuicheQuicStreamChannel extends DefaultAttributeMap implements QuicS
 
         void close(@Nullable ClosedChannelException writeFailCause, ChannelPromise promise) {
             assert eventLoop().inEventLoop();
+            if (!promise.setUncancellable()) {
+                return;
+            }
             if (!active || closePromise.isDone()) {
                 if (promise.isVoid()) {
                     return;
@@ -669,10 +697,10 @@ final class QuicheQuicStreamChannel extends DefaultAttributeMap implements QuicS
                             break;
                         } else if (res == Quiche.QUICHE_ERR_STREAM_STOPPED) {
                             // Once its signaled that the stream is stopped we can just fail everything.
-                            // We can also force the close as quiche will generate a RESET_STREAM frame.
+                            // That said we should not close the channel yet as there might be some data that is
+                            // not read yet by the user.
                             queue.removeAndFailAll(
                                     new ChannelOutputShutdownException("STOP_SENDING frame received"));
-                            forceClose();
                             break;
                         } else {
                             queue.remove().setFailure(Quiche.convertToException(res));
@@ -694,7 +722,10 @@ final class QuicheQuicStreamChannel extends DefaultAttributeMap implements QuicS
         @Override
         public void write(Object msg, ChannelPromise promise) {
             assert eventLoop().inEventLoop();
-
+            if (!promise.setUncancellable()) {
+                ReferenceCountUtil.release(msg);
+                return;
+            }
             // Check first if the Channel is in a state in which it will accept writes, if not fail everything
             // with the right exception
             if (!isOpen()) {
@@ -827,7 +858,7 @@ final class QuicheQuicStreamChannel extends DefaultAttributeMap implements QuicS
                     int res = parent().streamSend(streamId(), buffer, fin);
 
                     // Update the capacity as well.
-                    int cap = parent.streamCapacity(streamId());
+                    long cap = parent.streamCapacity(streamId());
                     if (cap >= 0) {
                         capacity = cap;
                     }
