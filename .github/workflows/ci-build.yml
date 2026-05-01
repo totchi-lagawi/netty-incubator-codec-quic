@@ -129,41 +129,43 @@ jobs:
       - name: Install stable rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: x86_64-pc-windows-msvc
+          targets: aarch64-pc-windows-msvc
 
       - name: Add msbuild to PATH
-        uses: microsoft/setup-msbuild@v2
+        uses: microsoft/setup-msbuild@v3
 
       - name: Configuring Developer Command Prompt
-        uses: ilammy/msvc-dev-cmd@v1
+        uses: ilammy/msvc-dev-cmd@138b1c783b65ec697d8342918306b7b2db4e88f1
         with:
-          arch: x86_amd64
+          arch: amd64_arm64
 
       - name: Install tools
-        uses: crazy-max/ghaction-chocolatey@v3
+        uses: crazy-max/ghaction-chocolatey@v4
         with:
           args: install ninja nasm
 
       # Cache .m2/repository
-      - uses: actions/cache@v4
+      - name: Cache Maven packages
+        uses: actions/cache@v5 # Note: Ensure you are using a stable version
         continue-on-error: true
         with:
           path: ~/.m2/repository
-          key: windows-x86_64-maven-cache-${{ hashFiles('**/pom.xml') }}
+          # Changed 'windows-x86_64' to 'linux-arm64' (or your specific OS)
+          key: ${{ runner.os }}-arm64-maven-cache-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
-            windows-x86_64-maven-cache-
+            ${{ runner.os }}-arm64-maven-cache-
 
       - name: Build project
         run: ./mvnw.cmd -B -ntp --file pom.xml clean package
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: ${{ always() }}
         with:
           name: build-windows-jars
           path: |
             **/target/*.jar
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: ${{ failure() }}
         with:
           name: build-windows-target
