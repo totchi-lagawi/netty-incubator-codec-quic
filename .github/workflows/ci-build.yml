@@ -84,7 +84,7 @@ jobs:
         run: |
          winget install --id Ninja-build.Ninja --source winget --exact --accept-package-agreements --accept-source-agreements
          winget install --id NASM.NASM --source winget --exact --accept-package-agreements --accept-source-agreements
-         echo "C:\Program Files\nasmlib" >> $GITHUB_PATH
+         echo "C:\Program Files\NASM" >> $GITHUB_PATH
 
       # Cache .m2/repository
       - name: Cache Maven packages
