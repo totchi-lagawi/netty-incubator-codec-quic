@@ -110,9 +110,9 @@ jobs:
             **/target/surefire-reports/
             **/hs_err*.log
 
-  build-windows:
-    runs-on: windows-2022
-    name: windows-x86_64
+  build-windows-arm:
+    runs-on: windows-11-arm
+    name: windows-arm
     env:
       # Let's limit the amount of ram that is used to unpack rustup as we saw
       # failures sometimes due the fact that not enough memory could be reserved.
