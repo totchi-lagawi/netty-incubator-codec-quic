@@ -70,15 +70,10 @@ jobs:
         run: |
           $ProgressPreference = 'SilentlyContinue'
           
-          # 1. Install the official WinGet PowerShell module
           Install-Module -Name Microsoft.WinGet.Client -Force -Repository PSGallery
-          
-          # 2. Bootstrap WinGet (this installs native ARM64 dependencies)
-          # Using -Force is required on CI runners to bypass "in-use" locks
+
           Repair-WinGetPackageManager -Force -Latest
           
-          # 3. Refresh the alias so the next step 'sees' winget
-          # This manually finds the winget.exe if the alias hasn't registered yet
           $wingetPath = Get-ChildItem -Path "C:\Program Files\WindowsApps\" -Filter "winget.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
           if ($wingetPath) {
               Write-Host "Found winget at: $wingetPath"
