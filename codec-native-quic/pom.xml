@@ -85,7 +85,7 @@
         <quicheTarget>x86_64-pc-windows-msvc</quicheTarget>
         <cargoTarget>--target=${quicheTarget}</cargoTarget>
         <quicheBuildDir>${quicheSourceDir}/target/${quicheTarget}/release</quicheBuildDir>
-        <cmakeAsmFlags />
+        <cmakeAsmFlags>ASM_NASM</cmakeAsmFlags>
         <cmakeCFlags />
         <!-- Disable one warning to be able to build on windows -->
         <cmakeCxxFlags>/wd4091</cmakeCxxFlags>
@@ -721,7 +721,7 @@
                           <env key="MACOSX_DEPLOYMENT_TARGET" value="${macosxDeploymentTarget}" />
                           <arg value="-DCMAKE_POSITION_INDEPENDENT_CODE=TRUE" />
                           <arg value="-DCMAKE_BUILD_TYPE=Release" />
-                          <!-- <arg value="-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded" /> -->
+                          <arg value="-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded" />
                           <arg value="-DCMAKE_ASM_FLAGS=${cmakeAsmFlags}" />
                           <arg value="-DCMAKE_C_FLAGS_RELEASE=${cmakeCFlags}" />
                           <arg value="-DCMAKE_CXX_FLAGS_RELEASE=${cmakeCxxFlags}" />
