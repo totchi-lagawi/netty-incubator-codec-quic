@@ -49,8 +49,8 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: 'zulu' # Zulu provides Windows arm64 builds for Java 8
-          java-version: '8'
-          architecture: x64
+          java-version: '11'
+          architecture: arm64
 
       - name: Install stable rust toolchain
         uses: dtolnay/rust-toolchain@stable
