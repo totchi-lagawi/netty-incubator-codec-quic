@@ -96,6 +96,29 @@
       </properties>
     </profile>
     <profile>
+      <id>windows-aarch64</id>
+      <activation>
+        <os>
+          <family>windows</family>
+        </os>
+      </activation>
+      <properties>
+        <skipTests>true</skipTests>
+        <boringsslHomeBuildDir>${boringsslHomeDir}/build/RelWithDebInfo</boringsslHomeBuildDir>
+        <quicheTarget>aarch64-pc-windows-msvc</quicheTarget>
+        <cargoTarget>--target=${quicheTarget}</cargoTarget>
+        <quicheBuildDir>${quicheSourceDir}/target/${quicheTarget}/release</quicheBuildDir>
+        <cmakeAsmFlags />
+        <cmakeCFlags />
+        <!-- Disable one warning to be able to build on windows -->
+        <cmakeCxxFlags>/wd4091</cmakeCxxFlags>
+        <libssl>ssl.lib</libssl>
+        <libcrypto>crypto.lib</libcrypto>
+        <libquiche>quiche.lib</libquiche>
+        <bundleNativeCode>META-INF/native/${jniLibName}.dll;osname=win32;processor=${os.detected.arch}</bundleNativeCode>
+      </properties>
+    </profile>
+    <profile>
       <id>mac</id>
       <activation>
         <os>
