@@ -65,9 +65,9 @@ jobs:
         with:
           arch: arm64
 
-      - name: Install and Setup WinGet
-       shell: pwsh
-       run: |
+       - name: Install and Setup WinGet
+        shell: pwsh
+        run: |
           $ProgressPreference = 'SilentlyContinue'
           
           # 1. Install the official WinGet PowerShell module
