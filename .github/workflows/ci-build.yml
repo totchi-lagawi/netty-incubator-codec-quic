@@ -65,10 +65,12 @@ jobs:
         with:
           arch: arm64
 
-      - name: Install tools via winget
+      - name: Install tools via vcpkg
         run: |
-         winget install --exact --id Ninja-build.Ninja --scope machine
-         winget install --exact --id NASM.NASM --scope machine
+         vcpkg install ninja:arm64-windows
+         vcpkg install nasm:arm64-windows
+         echo "C:\vcpkg\packages\ninja_arm64-windows\bin" >> $GITHUB_PATH
+         echo "C:\vcpkg\packages\nasm_arm64-windows\bin" >> $GITHUB_PATH
 
       # Cache .m2/repository
       - name: Cache Maven packages
