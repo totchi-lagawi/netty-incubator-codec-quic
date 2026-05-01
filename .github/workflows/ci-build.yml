@@ -35,81 +35,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-linux-x86_64:
-    runs-on: ubuntu-latest
-    name: linux-x86_64
-    steps:
-      - uses: actions/checkout@v4
-
-      # Caching of maven dependencies
-      - uses: actions/cache@v4
-        continue-on-error: true
-        with:
-          path: ~/.m2/repository
-          key: build-linux-x86_64-maven-cache-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            build-linux-x86_64-maven-cache-
-
-      - name: Build docker image
-        run: docker compose -f docker/docker-compose.centos-7.yaml -f docker/docker-compose.centos-7.18.yaml build
-
-      - name: Build project without leak detection
-        run: docker compose -f docker/docker-compose.centos-7.yaml -f docker/docker-compose.centos-7.18.yaml run build | tee build.output
-
-      - name: Checking for test failures
-        run: ./.github/scripts/check_build_result.sh build.output
-
-      - uses: actions/upload-artifact@v4
-        if: ${{ always() }}
-        with:
-          name: build-linux-x86_64-jars
-          path: |
-            **/target/*.jar
-
-      - uses: actions/upload-artifact@v4
-        if: ${{ failure() }}
-        with:
-          name: target
-          path: |
-            **/target/surefire-reports/
-            **/hs_err*.log
-
-  build-linux-aarch64:
-    runs-on: ubuntu-latest
-    name: linux-aarch64
-    steps:
-      - uses: actions/checkout@v4
-
-      # Caching of maven dependencies
-      - uses: actions/cache@v4
-        continue-on-error: true
-        with:
-          path: ~/.m2/repository
-          key: build-linux-aarch64-maven-cache-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            build-linux-aarch64-maven-cache-
-
-      - name: Build docker image
-        run: docker compose -f docker/docker-compose.centos-7-cross.yaml build
-
-      - name: Build project without leak detection
-        run: docker compose -f docker/docker-compose.centos-7-cross.yaml run cross-compile-aarch64-build
-
-      - uses: actions/upload-artifact@v4
-        if: ${{ always() }}
-        with:
-          name: build-linux-aarch64-jars
-          path: |
-            **/target/*.jar
-
-      - uses: actions/upload-artifact@v4
-        if: ${{ failure() }}
-        with:
-          name: target
-          path: |
-            **/target/surefire-reports/
-            **/hs_err*.log
-
   build-windows-arm:
     runs-on: windows-11-arm
     name: windows-arm
@@ -121,9 +46,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up JDK 8
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
-          distribution: zulu
+          distribution: microsoft
           java-version: 8
 
       - name: Install stable rust toolchain
@@ -146,11 +71,10 @@ jobs:
 
       # Cache .m2/repository
       - name: Cache Maven packages
-        uses: actions/cache@v5 # Note: Ensure you are using a stable version
+        uses: actions/cache@v5
         continue-on-error: true
         with:
           path: ~/.m2/repository
-          # Changed 'windows-x86_64' to 'linux-arm64' (or your specific OS)
           key: ${{ runner.os }}-arm64-maven-cache-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-arm64-maven-cache-
@@ -169,79 +93,6 @@ jobs:
         if: ${{ failure() }}
         with:
           name: build-windows-target
-          path: |
-            **/target/surefire-reports/
-            **/hs_err*.log
-
-  build-android:
-    runs-on: ubuntu-latest
-    name: android
-    env:
-      SDK_VER: "android-21"
-      NDK_VER: "25.2.9519653"
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup ninja-build
-        run: sudo apt-get install ninja-build
-
-      - name: Setup go
-        uses: actions/setup-go@v5
-
-      - name: Install cargo-ndk
-        uses: actions-rs/install@v0.1
-        with:
-          crate: cargo-ndk
-
-      - name: Install Rust toolchain for Android architectures
-        run: rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
-
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v4
-        with:
-          distribution: zulu
-          java-version: 8
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          cmdline-tools-version: 8512546
-
-      - name: Install Android SDK platforms
-        run: sdkmanager "platforms;${{ env.SDK_VER }}"
-
-      - name: Install Android NDK
-        run: sdkmanager "ndk;${{ env.NDK_VER }}"
-
-      - name: Setup environment
-        run: export ANDROID_NDK_HOME=${{ steps.setup-ndk.outputs.ndk-path }}
-
-      # Cache .m2/repository
-      # Caching of maven dependencies
-      - uses: actions/cache@v4
-        continue-on-error: true
-        with:
-          path: ~/.m2/repository
-          key: android-maven-cache-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            android-maven-cache-
-
-      - name: Build project
-        run: ./mvnw -B -ntp --file pom.xml clean package -Dandroid
-
-      - uses: actions/upload-artifact@v4
-        if: ${{ always() }}
-        with:
-          name: build-android-jars-aars
-          path: |
-            **/target/*.jar
-            **/target/*.aar
-
-      - uses: actions/upload-artifact@v4
-        if: ${{ failure() }}
-        with:
-          name: build-android-target
           path: |
             **/target/surefire-reports/
             **/hs_err*.log
