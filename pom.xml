@@ -75,8 +75,8 @@
   </developers>
 
   <modules>
-    <module>codec-classes-quic</module>
-<!--    <module>codec-native-quic</module>-->
+<!-- <module>codec-classes-quic</module> -->
+    <module>codec-native-quic</module>
 <!--    <module>testsuite-native-image</module>-->
   </modules>
   <properties>
