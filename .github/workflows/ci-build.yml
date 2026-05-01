@@ -65,7 +65,7 @@ jobs:
         with:
           arch: arm64
 
-       - name: Install and Setup WinGet
+      - name: Install and Setup WinGet
         shell: pwsh
         run: |
           $ProgressPreference = 'SilentlyContinue'
