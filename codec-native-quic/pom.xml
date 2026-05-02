@@ -112,7 +112,7 @@
         <cmakeCFlags />
         <!-- Disable one warning to be able to build on windows -->
         <cmakeCxxFlags>/wd4091</cmakeCxxFlags>
-        <extraCmakeFlags>-DOPENSSL_NO_ASM</extraCmakeFlags>
+        <extraCmakeFlags>-DOPENSSL_NO_ASM=1</extraCmakeFlags>
         <libssl>ssl.lib</libssl>
         <libcrypto>crypto.lib</libcrypto>
         <libquiche>quiche.lib</libquiche>
