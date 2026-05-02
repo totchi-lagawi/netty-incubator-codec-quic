@@ -112,7 +112,7 @@
         <cmakeCFlags />
         <!-- Disable one warning to be able to build on windows -->
         <cmakeCxxFlags>/wd4091</cmakeCxxFlags>
-        <extraCmakeFlags>-DASM_DIALECT=_MARMASM -DCMAKE_ASM_MARMASM_COMPILER_INIT=armasm64</extraCmakeFlags>
+        <extraCmakeFlags>-DASM_DIALECT=_MARMASM -DCMAKE_ASM_MARMASM_COMPILER_INIT=armasm64 -DCMAKE_ASM_COMPILER=armasm64.exe -DCMAKE_ASM_MARMASM_COMPILER=armasm64.exe</extraCmakeFlags>
         <libssl>ssl.lib</libssl>
         <libcrypto>crypto.lib</libcrypto>
         <libquiche>quiche.lib</libquiche>
