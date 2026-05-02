@@ -112,7 +112,7 @@
         <cmakeCFlags />
         <!-- Disable one warning to be able to build on windows -->
         <cmakeCxxFlags>/wd4091</cmakeCxxFlags>
-        <extraCmakeFlags>-DCMAKE_ASM_COMPILER=nasm.exe</extraCmakeFlags>
+        <extraCmakeFlags>-DCMAKE_ASM_COMPILER=armasm64.exe</extraCmakeFlags>
         <libssl>ssl.lib</libssl>
         <libcrypto>crypto.lib</libcrypto>
         <libquiche>quiche.lib</libquiche>
